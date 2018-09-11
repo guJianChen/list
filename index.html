@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title></title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="./vue2.js"></script>
+  <script src="./axios.js"></script>
+  <style>
+    #app {
+      width: 600px;
+      margin: 10px auto;
+    }
+
+    .tb {
+      border-collapse: collapse;
+      width: 100%;
+    }
+
+    .tb th {
+      background-color: #0094ff;
+      color: white;
+    }
+
+    .tb td,
+    .tb th {
+      padding: 5px;
+      border: 1px solid black;
+      text-align: center;
+    }
+
+    .add {
+      padding: 5px;
+      border: 1px solid black;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app">
+  <div class="add">
+      编号:<input type="text">
+      品牌名称:<input type="text" v-model="pname">
+      <input type="button" value="添加" @click="addList">
+  </div>
+
+  <div class="add">
+      品牌名称:<input type="text" placeholder="请输入搜索条件" v-model="search" @input="getList">
+  </div>
+
+  <div>
+      <table class="tb">
+          <tr>
+              <th>编号</th>
+              <th>品牌名称</th>
+              <th>创立时间</th>
+              <th>操作</th>
+          </tr>
+          <!-- <tr >
+              <td colspan="4">没有品牌数据</td>
+          </tr> -->
+          <tr v-for="(v,i) in list">
+              <td>{{v.id}}</td>
+              <td>{{v.name}}</td>
+              <td>{{v.ctime | fmttime('-')}}</td>
+              <td><button @click="deleteList(v.id)">删除</button></td>
+          </tr>
+      <!-- 动态生成内容tr -->
+      </table>
+  </div>
+  </div>
+  </body>
+<script>
+  Vue.filter('fmttime',function(time,split){
+    // console.log(typeof(time));
+    time = new Date(time);
+    let y = time.getFullYear();
+    let m = time.getMonth() + 1;
+    let d = time.getDate();
+    console.log(d);
+    
+    return y + split + m + split + d
+        
+    
+  })
+  var vm = new Vue({
+    el: '#app',
+    data: {
+      pname: '',
+      search: '',
+      list:[{id:'1',name: '11',ctime: '111'}]
+    },
+    mounted () {
+      this.getList()
+    },
+    methods: {
+      getList(){
+        axios.get('http://www.liulongbin.top:3005/api/getprodlist',{params: {searchvalue: this.search}})
+          .then(res=>{
+            console.log(res.data.message);
+            this.list = res.data.message
+          })
+      },
+      addList() {
+        // console.log(1111);
+        axios.post('http://www.liulongbin.top:3005/api/addproduct',{name: this.pname})
+          .then(res=>{
+            console.log(res);
+            this.getList();
+          })
+        
+      },
+      deleteList(idx){
+        axios.get(`http://www.liulongbin.top:3005/api/delproduct/${idx}`)
+          .then(res=>{
+            console.log(res);
+            this.getList()
+          })
+      }
+    }
+  })
+
+</script>
+
+</html>
